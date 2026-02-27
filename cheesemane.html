@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cheesemane</title>
+    <link rel="icon" type="image/png" href="1765926678041.png">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+
+            background-image: url("poltigo.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            height: 100vh;
+            color: white;
+            text-align: center;
+        }
+
+        .logo {
+            width: 380px;
+            margin-top: -120px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            max-width: 600px;
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.45);
+            padding: 12px 18px;
+            border-radius: 12px;
+        }
+
+        .games-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .game-button {
+            width: 220px;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 22px;
+
+            background: white;
+            color: #FFD700;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            transition: 0.2s;
+        }
+
+        .game-button img {
+            width: 150px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .game-button:hover {
+            transform: scale(1.08);
+            background: #FFFF66;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- optional fakebox moved correctly -->
+    <div id="fakebox" role="searchbox" tabindex="0" aria-label="Search or enter web address"></div>
+
+    <img src="1765926678041.png" alt="Cheesemane" class="logo">
+
+    <p>
+        Holes are games, mice are players.<br>
+        Dig through holes, play exciting games.
+    </p>
+
+    <div class="games-row">
+
+        <button class="game-button" onclick="location.href='luckyclicker.html'">
+            <img src="logolucky.jpg" alt="Lucky Clicker">
+            Lucky Clicker
+        </button>
+
+        <button class="game-button" onclick="location.href='fishing.html'">
+            <img src="fishing.jpg" alt="Fishing Game">
+            Fishing Game
+        </button>
+
+        <button class="game-button" onclick="location.href='brainrot.html'">
+            <img src="brainrot.png" alt="Brainrot Battle">
+            Brainrot Battle
+        </button>
+
+        <button class="game-button" onclick="location.href='crafting.html'">
+            <img src="444.png" alt="Crafting Empire">
+            Crafting Empire
+        </button>
+
+        <button class="game-button" onclick="location.href='dungeon.html'">
+            <img src="dungeon.png" alt="Story Dungeon">
+            Once upon a time…
+        </button>
+
+        <button class="game-button" onclick="location.href='MainPage.html'">
+            <img src="candy.jpg" alt="Craft A Pizza">
+            Craft A Pizza
+        </button>
+
+        <button class="game-button" onclick="location.href='bro.html'">
+            <img src="THEBRO'S.jpg" alt="The Bros: Level 100 Legends">
+            The Bros: Level 100 Legends
+        </button>
+
+    </div>
+
+</body>
+</html>
+
+
