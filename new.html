@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crafting Empire</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #050505; /* Black background to make images pop */
+            overflow: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            width: 100%;
+            max-width: 2200px; /* Wider container for the bigger buttons */
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 50px;
+        }
+
+        /* 3-button column layout based on your sketch [2] */
+        .button-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Space between the massive icons */
+        }
+
+        /* Image-Only Button Styling - NO OUTLINE */
+        .img-button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: transform 0.3s ease; 
+        }
+
+        /* Hover effect: Makes the massive image even bigger */
+        .img-button:hover {
+            transform: scale(1.5);
+            filter: brightness(1.3);
+        }
+
+        /* UPDATED: THE BUTTON IMAGES ARE NOW MUCH BIGGER */
+        .menu-icon {
+            width: 250px; /* Massive button image size */
+            height: 250px;
+            object-fit: contain;
+        }
+
+        /* Central Logo - Keeping it balanced with the big buttons */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-logo-image {
+            width: 400px; 
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- Left Side: 3 Massive Buttons [2] -->
+        <div class="button-column">
+            <button class="img-button">
+                <!-- Using items from your Ores/Materials list [3] -->
+                <img src="inventory.png" alt="Inventory" class="menu-icon">
+            </button>
+            <button class="img-button">
+                <!-- Using Crafting items like Oak Planks [4] -->
+                <img src="crafting.png" alt="Crafting" class="menu-icon">
+            </button>
+            <button class="img-button">
+                <!-- Using tools like the Cobalt Pickaxe [1] -->
+                <img src="mining.png" alt="Mining" class="menu-icon">
+            </button>
+        </div>
+
+        <!-- Central Logo [2] -->
+        <div class="logo-container">
+            <img src="logo.png" alt="GAME LOGO" class="main-logo-image">
+        </div>
+
+        <!-- Right Side: 3 Massive Buttons [2] -->
+        <div class="button-column">
+            <button class="img-button">
+                <!-- Using Special grade items like Wolf Dagger [1] -->
+                <img src="stats_icon.png" alt="Stats" class="menu-icon">
+            </button>
+            <button class="img-button">
+                <!-- Using Minerals like Ruby or Diamond [3] -->
+                <img src="shop_icon.png" alt="Shop" class="menu-icon">
+            </button>
+            <button class="img-button">
+                <!-- Using scrap [5] or other materials -->
+                <img src="exit_icon.png" alt="Exit" class="menu-icon">
+            </button>
+        </div>
+    </div>
+
+</body>
+</html>

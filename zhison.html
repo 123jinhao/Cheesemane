@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Master: Tools & Hardware</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --bg: #0f0f1a;
+            --panel: #1b1b2f;
+            --accent: #00d2d3; /* Cyan */
+            --gold: #ff9f43;
+            --green: #2ecc71;
+            --red: #ff6b6b;
+            --text: #c8d6e5;
+            --locked: #576574;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-layout {
+            display: flex;
+            width: 1000px;
+            height: 650px;
+            background: var(--panel);
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 210, 211, 0.1);
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        /* --- LEFT SIDE: THE WORKSTATION --- */
+        .click-section {
+            flex: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid #333;
+            position: relative;
+            background: radial-gradient(circle at center, #252540 0%, #1b1b2f 70%);
+        }
+
+        .currency-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .currency {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-shadow: 0 0 15px rgba(0, 210, 211, 0.5);
+        }
+
+        .stats {
+            font-size: 0.9rem;
+            color: #8395a7;
+            margin-top: 5px;
+        }
+
+        /* The Main Clicker Button */
+        #main-clicker {
+            width: 220px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem; /* Emoji size */
+            cursor: pointer;
+            transition: transform 0.05s, filter 0.2s;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+            position: relative;
+            z-index: 10;
+        }
+
+        #main-clicker:active { transform: scale(0.9); }
+        #main-clicker:hover { filter: drop-shadow(0 0 30px var(--accent)); }
+
+        #warning-msg {
+            color: var(--red);
+            font-weight: bold;
+            opacity: 0;
+            margin-top: 30px;
+            height: 20px;
+            transition: opacity 0.2s;
+        }
+
+        /* --- RIGHT SIDE: THE MARKET --- */
+        .shop-section {
+            flex: 6;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            background: #121220;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #576574;
+            transition: 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover { background: #1b1b2f; color: white; }
+        
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom: 3px solid var(--accent);
+            background: #1b1b2f;
+        }
+
+        /* Shop Containers */
+        .shop-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: none; /* Hidden by default */
+        }
+
+        .shop-content.active { display: block; }
+
+        /* Item Cards */
+        .card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.03);
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.2s;
+        }
+
+        .card:hover { background: rgba(255,255,255,0.08); }
+
+        .card-icon { font-size: 2.5rem; margin-right: 20px; width: 50px; text-align: center; }
+        .card-info h4 { margin: 0; font-size: 1.1rem; color: #fff; }
+        .card-info p { margin: 5px 0 0; font-size: 0.85rem; color: #a4b0be; }
+
+        .price-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            min-width: 80px;
+            transition: 0.2s;
+        }
+
+        .price-btn:hover { background: var(--accent); color: #000; }
+        
+        /* Locked/Cant Afford State */
+        .card.locked { opacity: 0.5; pointer-events: none; }
+        .card.locked .price-btn { border-color: var(--locked); color: var(--locked); }
+
+        /* EQUIPPED State */
+        .card.equipped { border: 1px solid var(--green); background: rgba(46, 204, 113, 0.1); }
+        .card.equipped .price-btn {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+            cursor: default;
+        }
+
+        /* Floating Text Animation */
+        .float-text {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="game-layout">
+        
+        <div class="click-section">
+            <div class="currency-box">
+                <div class="currency" id="score">0</div>
+                <div class="stats">BITS (Currency)</div>
+                <div class="stats" style="margin-top: 15px;">
+                    ⚡ Power: <span id="power-display">1</span> | 🔄 Auto: <span id="auto-display">0</span>/s
+                </div>
+            </div>
+
+            <div id="main-clicker">👆</div>
+            
+            <div id="warning-msg">⚠️ NO CHEATING! ⚠️</div>
+        </div>
+
+        <div class="shop-section">
+            <div class="tabs">
+                <div class="tab-btn active" onclick="switchTab('hardware')">Consoles (Auto)</div>
+                <div class="tab-btn" onclick="switchTab('tools')">Tools (Click)</div>
+            </div>
+
+            <div id="tab-hardware" class="shop-content active">
+                </div>
+
+            <div id="tab-tools" class="shop-content">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- GAME DATA --- */
+        let game = {
+            bits: 0,
+            clickPower: 1,      // How much you get per click
+            autoIncome: 0,      // How much you get per second
+            lastClick: 0        // For anti-cheat
+        };
+
+        // 1. TOOLS (One-time buy, changes visual, increases click power)
+        const tools = [
+            { id: 0, name: "Finger", icon: "👆", power: 1, cost: 0, owned: true },
+            { id: 1, name: "Old Stylus", icon: "🖊️", power: 3, cost: 50, owned: false },
+            { id: 2, name: "Rusty Wrench", icon: "🔧", power: 8, cost: 250, owned: false },
+            { id: 3, name: "Golden Hammer", icon: "🔨", power: 20, cost: 1000, owned: false },
+            { id: 4, name: "Soldering Iron", icon: "🌡️", power: 50, cost: 5000, owned: false },
+            { id: 5, name: "Power Drill", icon: "🔫", power: 150, cost: 20000, owned: false },
+            { id: 6, name: "Laser Cutter", icon: "⚡", power: 500, cost: 100000, owned: false },
+            { id: 7, name: "Plasma Cannon", icon: "🔮", power: 2000, cost: 1000000, owned: false }
+        ];
+
+        // 2. HARDWARE (Buy many times, increases passive income)
+        const hardware = [
+            { id: 0, name: "Old PC Mouse", icon: "🖱️", rate: 1, baseCost: 15, count: 0 },
+            { id: 1, name: "Budget GPU", icon: "📼", rate: 5, baseCost: 100, count: 0 },
+            { id: 2, name: "Game Console", icon: "🎮", rate: 20, baseCost: 500, count: 0 },
+            { id: 3, name: "Server Rack", icon: "🖥️", rate: 75, baseCost: 2500, count: 0 },
+            { id: 4, name: "Crypto Farm", icon: "🏭", rate: 250, baseCost: 10000, count: 0 },
+            { id: 5, name: "Super Computer", icon: "💾", rate: 1000, baseCost: 75000, count: 0 }
+        ];
+
+        /* --- DOM ELEMENTS --- */
+        const scoreEl = document.getElementById('score');
+        const powerEl = document.getElementById('power-display');
+        const autoEl = document.getElementById('auto-display');
+        const clickerBtn = document.getElementById('main-clicker');
+        const warningEl = document.getElementById('warning-msg');
+        
+        const hardwareContainer = document.getElementById('tab-hardware');
+        const toolsContainer = document.getElementById('tab-tools');
+
+        /* --- INITIALIZATION --- */
+        function init() {
+            renderHardware();
+            renderTools();
+            updateUI();
+        }
+
+        /* --- CLICKING LOGIC --- */
+        clickerBtn.addEventListener('mousedown', (e) => {
+            const now = Date.now();
+            if (now - game.lastClick < 60) { // Anti-cheat (60ms limit)
+                warningEl.style.opacity = 1;
+                setTimeout(() => warningEl.style.opacity = 0, 500);
+                return; 
+            }
+            game.lastClick = now;
+
+            // Add Bits
+            game.bits += game.clickPower;
+            
+            // Visual Effect
+            spawnFloatingText(e.clientX, e.clientY, +${game.clickPower});
+            
+            // Button visual bounce
+            clickerBtn.style.transform = "scale(0.9)";
+            setTimeout(() => clickerBtn.style.transform = "scale(1)", 100);
+
+            updateUI();
+        });
+
+        /* --- BUYING LOGIC: HARDWARE (Consoles) --- */
+        function buyHardware(index) {
+            let item = hardware[index];
+            let cost = Math.floor(item.baseCost * Math.pow(1.15, item.count));
+
+            if (game.bits >= cost) {
+                game.bits -= cost;
+                item.count++;
+                game.autoIncome += item.rate;
+                
+                renderHardware(); // Re-render to update price
+                updateUI();
+            }
+        }
+
+        /* --- BUYING LOGIC: TOOLS (Unique Items) --- */
+        function buyTool(index) {
+            let tool = tools[index];
+            
+            if (!tool.owned && game.bits >= tool.cost) {
+                game.bits -= tool.cost;
+                tool.owned = true;
+                equipTool(index); // Update game stats and visuals
+                renderTools();    // Update shop UI
+                updateUI();
+            }
+        }
+
+        function equipTool(index) {
+            let tool = tools[index];
+            game.clickPower = tool.power;
+            clickerBtn.innerHTML = tool.icon; // CHANGE THE MAIN PICTURE
+        }
+
+        /* --- RENDERING THE SHOP --- */
+        function renderHardware() {
+            hardwareContainer.innerHTML = "";
+            hardware.forEach((item, index) => {
+                let cost = Math.floor(item.baseCost * Math.pow(1.15, item.count));
+                
+                let div = document.createElement('div');
+                div.className = "card";
+                // Check if affordable logic handles in updateUI loop mostly, 
+                // but we add IDs to update them efficiently later.
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <div class="card-icon">${item.icon}</div>
+                        <div class="card-info">
+                            <h4>${item.name}</h4>
+                            <p>+${item.rate} / sec</p>
+                            <p style="color:#576574; font-size:0.7rem;">Owned: ${item.count}</p>
+                        </div>
+                    </div>
+                    <button class="price-btn" id="hw-btn-${index}" onclick="buyHardware(${index})">
+                        ${cost} 💰
+                    </button>
+                `;
+                hardwareContainer.appendChild(div);
+            });
+        }
+
+        function renderTools() {
+            toolsContainer.innerHTML = "";
+            tools.forEach((tool, index) => {
+                let div = document.createElement('div');
+                
+                let btnState = "";
+                let btnText = ${tool.cost} 💰;
+                let cardClass = "card";
+
+                if (tool.owned) {
+                    cardClass += " equipped";
+                    btnText = "EQUIPPED";
+                    // If owned, clicking does nothing (or could re-equip if we allowed downgrading)
+                }
+
+                div.className = cardClass;
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <div class="card-icon">${tool.icon}</div>
+                        <div class="card-info">
+                            <h4>${tool.name}</h4>
+                            <p>Click Power: ${tool.power}</p>
+                        </div>
+                    </div>
+                    <button class="price-btn" id="tool-btn-${index}" onclick="buyTool(${index})">
+                        ${btnText}
+                    </button>
+                `;
+                toolsContainer.appendChild(div);
+            });
+        }
+
+        /* --- GAME LOOP & UI UPDATE --- */
+        setInterval(() => {
+            if (game.autoIncome > 0) {
+                game.bits += game.autoIncome / 10; // Divide by 10 for smooth ticks
+                updateUI();
+            }
+        }, 100);
+
+        function updateUI() {
+            scoreEl.innerText = Math.floor(game.bits).toLocaleString();
+            powerEl.innerText = game.clickPower.toLocaleString();
+            autoEl.innerText = game.autoIncome.toLocaleString();
+
+            // Check Hardware Affordability
+            hardware.forEach((item, index) => {
+                let btn = document.getElementById(hw-btn-${index});
+                let cost = Math.floor(item.baseCost * Math.pow(1.15, item.count));
+                if (btn) {
+                    if (game.bits >= cost) {
+                        btn.style.opacity = 1;
+                        btn.style.borderColor = "var(--accent)";
+                        btn.style.color = "var(--accent)";
+                    } else {
+                        btn.style.opacity = 0.5;
+                        btn.style.borderColor = "var(--locked)";
+                        btn.style.color = "var(--locked)";
+                    }
+                }
+            });
+
+            // Check Tool Affordability
+            tools.forEach((tool, index) => {
+                let btn = document.getElementById(tool-btn-${index});
+                if (btn && !tool.owned) {
+                    if (game.bits >= tool.cost) {
+                        btn.style.opacity = 1;
+                        btn.style.borderColor = "var(--accent)";
+                        btn.style.color = "var(--accent)";
+                    } else {
+                        btn.style.opacity = 0.5;
+                        btn.style.borderColor = "var(--locked)";
+                        btn.style.color = "var(--locked)";
+                    }
+                }
+            });
+        }
+
+        /* --- VISUAL HELPERS --- */
+        function switchTab(tabName) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update Content
+            document.querySelectorAll('.shop-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tab-${tabName}).classList.add('active');
+        }
+
+        function spawnFloatingText(x, y, text) {
+            let el = document.createElement('div');
+            el.className = 'float-text';
+            el.innerText = text;
+            el.style.left = ${x}px;
+            el.style.top = ${y}px;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        // Start the game
+        init();
+
+    </script>
+</body>
+</html>

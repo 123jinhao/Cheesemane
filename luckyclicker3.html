@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Clicker</title>
+    <style>
+        /* --- STYLE SECTION --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212; /* Matches loading screen */
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            user-select: none; /* Prevents highlighting text while spam clicking */
+            overflow: hidden;
+        }
+
+        /* The Score Board */
+        .header {
+            margin-top: 45px;
+            text-align: center;
+        }
+
+        .score-title {
+            font-size: 1.5rem;
+            color: #aaa;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .score-display {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #4CAF50; /* The Green Theme */
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        /* The Big Clickable Area */
+        .game-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: relative; /* Needed for floating numbers */
+        }
+
+        /* The Clover Button */
+        #lucky-btn {
+            width: 600px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.1s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+            filter: drop-shadow(0 0 15px rgba(76, 175, 80, 0.2));
+            border-radius: 50%; /* optional, keeps click area round */
+            -webkit-user-drag: none; /* Prevents dragging the image */
+        }
+
+        /* Animation when you click */
+        #lucky-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Floating +1 Animation Styles */
+        .floating-number {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            pointer-events: none; /* Let clicks pass through */
+            animation: floatUp 1s forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+
+        /* A small footer */
+        .footer {
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="score-title">Current Luck</div>
+        <div class="score-display" id="luck-score">0</div>
+    </div>
+
+    <div class="game-area">
+        <img src="lucky clicker.png" id="lucky-btn" alt="Click for Luck!">
+    </div>
+
+    <div class="footer">Click the Clover to gain Luck</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

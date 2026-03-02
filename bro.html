@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>THE BROS: Level 100 legends</title>
+    <style>
+        :root { 
+            --main: #00ffcc; --gold: #ffcc00; --mythic: #bc13fe; --exotic: #00ffff; 
+            --danger: #ff2a6d; --bg: #020205; --glass: rgba(255, 255, 255, 0.08);
+        }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; }
+
+        /* BATTLEFIELD */
+        #arena { height: 65vh; background: radial-gradient(circle at center, #111b2d 0%, #020205 100%); position: relative; overflow: hidden; border-bottom: 3px solid #1a1a1a; }
+        
+        /* HUD UI */
+        .top-hud { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 1000; }
+        .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 12px 25px; display: flex; align-items: center; gap: 20px; font-weight: 900; }
+        
+        /* OVERLAYS */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.97); z-index: 5000; display: none; flex-direction: column; align-items: center; padding: 40px; overflow-y: auto; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; width: 90%; margin-top: 30px; }
+        .card { background: linear-gradient(145deg, #111, #080808); border: 2px solid #333; padding: 30px; border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .card:hover { border-color: var(--main); transform: translateY(-10px); box-shadow: 0 10px 30px rgba(0,255,204,0.3); }
+        .card h1 { font-size: 60px; margin: 15px 0; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+
+        /* UNIT STYLES */
+        .unit { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; transition: 0.1s; }
+        .unit.dead { filter: grayscale(1) opacity(0.3) blur(2px); transform: translate(-50%, -50%) rotate(90deg); }
+        .hp-bar { width: 80px; height: 8px; background: #000; border-radius: 10px; border: 1px solid #333; overflow: hidden; margin-bottom: 5px; }
+        .hp-fill { height: 100%; background: var(--main); transition: width 0.3s; }
+        .boss-unit { transform: translate(-50%, -50%) scale(2.5); filter: drop-shadow(0 0 30px var(--danger)); }
+
+        /* INVENTORY */
+        #inventory-bar { height: 180px; background: #050505; display: flex; gap: 15px; padding: 25px; border-top: 2px solid #222; overflow-x: auto; }
+        .inv-item { min-width: 120px; height: 140px; background: var(--glass); border: 2px solid #333; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .inv-item.equipped { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
+
+        .btn-premium { background: var(--main); color: black; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-premium:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--main); }
+
+        /* PETS */
+        .pet { position: absolute; font-size: 30px; z-index: 5; pointer-events: none; }
+        .rarity-exotic { filter: drop-shadow(0 0 10px var(--exotic)); }
+        .rarity-mythic { filter: drop-shadow(0 0 10px var(--mythic)); }
+    </style>
+</head>
+<body>
+
+<div id="start-screen" class="overlay" style="display:flex;">
+    <h1 style="font-size: 6rem; text-shadow: 0 0 40px var(--main); margin: 0;">THE BROS</h1>
+    <p style="letter-spacing: 20px; color: #444; margin-bottom: 50px;">level 100 legends</p>
+    <div style="display:flex; gap:20px;">
+        <button class="btn-premium" onclick="initGame(false)">NEW JOURNEY</button>
+        <button id="load-btn" class="btn-premium" style="background:var(--gold); display:none;" onclick="initGame(true)">LOAD PROGRESS</button>
+    </div>
+</div>
+
+<div class="top-hud">
+    <div class="glass">
+        <span>💰 <span id="pts-ui" style="color:var(--gold)">1,000</span></span>
+        <span>🌊 WAVE <span id="wave-ui">1</span></span>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <button class="btn-premium" style="background:var(--gold)" onclick="saveGame()">💾 SAVE</button>
+        <button class="btn-premium" onclick="openShop('armory')">🛒 ARMORY</button>
+        <button class="btn-premium" style="background:var(--mythic); color:white" onclick="openShop('hatchery')">🥚 HATCHERY</button>
+    </div>
+</div>
+
+<div id="arena"></div>
+<div id="inventory-bar"><div id="inv-container" style="display:flex; gap:15px;"></div></div>
+
+<div id="draft-menu" class="overlay">
+    <h1 style="color:var(--main)">WAVE CLEARED</h1>
+    <p>SELECT A NEW ELITE BRO TO JOIN YOUR SQUAD</p>
+    <div class="grid" id="draft-grid"></div>
+</div>
+
+<div id="shop-menu" class="overlay">
+    <h1 id="shop-title">SHOP</h1>
+    <div class="grid" id="shop-grid"></div>
+    <button class="btn-premium" style="margin-top:40px" onclick="closeMenus()">CLOSE</button>
+</div>
+
+<div id="loot-menu" class="overlay">
+    <div class="card" style="width: 400px; border-color: var(--gold); border-width: 4px;">
+        <h1 id="loot-icon">🎁</h1>
+        <h2 id="loot-name">UNBOXING...</h2>
+        <p id="loot-rarity"></p>
+        <button class="btn-premium" onclick="closeMenus()">CLAIM REWARD</button>
+    </div>
+</div>
+
+<script>
+    let pts = 1000, wave = 1, bros = [], enemies = [], myItems = [], myPets = [];
+    let waveActive = false;
+
+    // LIBRARIES (50+ VARIATIONS)
+    const broIcons = ['🧔','🥷','🧙‍♂️','🦾','🤴','🤺','💂‍♂️','🤠','🧑‍🚀','👮‍♂️','🕵️‍♂️','🧛‍♂️','🧞‍♂️','🧜‍♂️','🦸‍♂️','🦹‍♂️','🧑‍🔬','🧑‍🚒','🧑‍🌾','🧑‍🍳'];
+    const monsterIcons = ['👾','👹','🧛','🧟','💀','👽','🕷','🦂','🐉','🤖','👺','🦇','🐙','🦖','🛸','👻','🎃','👺','🐍','🐺','🐗','🐘','🦍','🐊'];
+    const petIcons = { 'Common':'🐶', 'Rare':'🦊', 'Epic':'🦄', 'Mythic':'🐲', 'Exotic':'💎' };
+
+    const armoryStock = [
+        {n:"Medkit", i:"💉", c:300, d:"Heal Squad", t:"USE", eff:()=>healSquad()},
+        {n:"Steel Sword", i:"🗡️", c:1000, d:"+800 ATK", t:"EQUIP", atk:800},
+        {n:"Titan Plate", i:"🛡️", c:2000, d:"+5000 HP", t:"EQUIP", hp:5000},
+        {n:"Omega Blade", i:"⚔️", c:8000, d:"+4000 ATK", t:"EQUIP", atk:4000},
+        {n:"God Core", i:"⚛️", c:20000, d:"+10k HP/ATK", t:"EQUIP", hp:10000, atk:10000}
+    ];
+
+    if(localStorage.getItem('bro_save_ultimate')) document.getElementById('load-btn').style.display='block';
+
+    function initGame(load) {
+        document.getElementById('start-screen').style.display = 'none';
+        if(load) {
+            const s = JSON.parse(localStorage.getItem('bro_save_ultimate'));
+            pts = s.pts; wave = s.wave; bros = s.bros; myItems = s.myItems; myPets = s.myPets;
+        } else {
+            addBro("Lead", "🧔", 5000, 500);
+        }
+        startWave();
+        updateUI();
+        loop();
+    }
+
+    function addBro(n, i, hp, atk) {
+        bros.push({ i, hp, maxHp: hp, atk, x: -100, y: 350, dead: false });
+    }
+
+    function startWave() {
+        enemies = [];
+        let isBoss = (wave % 10 === 0);
+        let count = isBoss ? 1 : 2 + Math.floor(wave/3);
+        for(let i=0; i<count; i++) {
+            let icon = isBoss ? '👹' : monsterIcons[Math.floor(Math.random()*monsterIcons.length)];
+            enemies.push({ 
+                i: icon, hp: isBoss ? 60000*wave : 3000*wave, 
+                maxHp: isBoss ? 60000*wave : 3000*wave, 
+                atk: isBoss ? 400*wave : 120*wave, 
+                x: 1200 + (i*180), y: 350 + (Math.random()*100-50), isBoss 
+            });
+        }
+        waveActive = true;
+    }
+
+    function openShop(type) {
+        const grid = document.getElementById('shop-grid');
+        const title = document.getElementById('shop-title');
+        grid.innerHTML = '';
+        if(type === 'armory') {
+            title.innerText = "SQUAD ARMORY";
+            armoryStock.forEach(it => {
+                let c = document.createElement('div'); c.className = 'card';
+                c.innerHTML = `<h1>${it.i}</h1><h3>${it.n}</h3><p>${it.d}</p><b>${it.c} 💰</b>`;
+                c.onclick = () => { if(pts>=it.c){ pts-=it.c; myItems.push({...it, id:Math.random()}); updateUI(); } };
+                grid.appendChild(c);
+            });
+        } else {
+            title.innerText = "MYTHIC HATCHERY";
+            const rarities = ['Common','Rare','Epic','Mythic','Exotic'];
+            rarities.forEach((r, i) => {
+                let cost = Math.pow(10, i+2);
+                let c = document.createElement('div'); c.className = 'card';
+                c.innerHTML = `<h1>🥚</h1><h3>${r} Egg</h3><b>${cost} 💰</b>`;
+                c.onclick = () => { if(pts>=cost){ pts-=cost; myPets.push({i:petIcons[r], r, atk:cost*2, angle:Math.random()*7}); updateUI(); } };
+                grid.appendChild(c);
+            });
+        }
+        document.getElementById('shop-menu').style.display = 'flex';
+    }
+
+    function generateDraft() {
+        const grid = document.getElementById('draft-grid');
+        grid.innerHTML = '';
+        for(let i=0; i<3; i++) {
+            let icon = broIcons[Math.floor(Math.random()*broIcons.length)];
+            let hp = 4000 + (Math.random()*8000), atk = 400 + (Math.random()*1200);
+            let c = document.createElement('div'); c.className = 'card';
+            c.innerHTML = `<h1>${icon}</h1><p>HP: ${Math.floor(hp)}<br>ATK: ${Math.floor(atk)}</p><button class="btn-premium">HIRE</button>`;
+            c.onclick = () => { addBro("Elite", icon, hp, atk); document.getElementById('draft-menu').style.display='none'; wave++; startWave(); };
+            grid.appendChild(c);
+        }
+        document.getElementById('draft-menu').style.display = 'flex';
+    }
+
+    function triggerLoot() {
+        let rng = Math.random();
+        let loot;
+        if(rng < 0.7) { loot = {n:"Rusty Junk", i:"⚙️", r:"BAD/COMMON"}; }
+        else if(rng < 0.95) { loot = {n:"Hero Blade", i:"🗡️", r:"GOOD/RARE", atk:3000}; }
+        else { loot = {n:"Exotic Pet Egg", i:"💎", r:"LEGENDARY", isEgg: true}; }
+
+        document.getElementById('loot-icon').innerText = loot.i;
+        document.getElementById('loot-name').innerText = loot.n;
+        document.getElementById('loot-rarity').innerText = loot.r;
+        
+        if(loot.isEgg) myPets.push({i:petIcons.Exotic, r:'Exotic', atk:10000, angle:0});
+        else myItems.push({...loot, id:Math.random(), t:"EQUIP"});
+        
+        document.getElementById('loot-menu').style.display = 'flex';
+        updateUI();
+    }
+
+    function loop() {
+        if(waveActive) {
+            let liveBros = bros.filter(b => !b.dead);
+            bros.forEach((b, i) => { 
+                b.x += (250 - (i*80) - b.x)*0.1; 
+                b.y += (350 + (i%2==0?i*40:-i*40) - b.y)*0.1; 
+            });
+
+            if(enemies.length === 0) {
+                waveActive = false;
+                if(wave % 10 === 0) triggerLoot(); else generateDraft();
+            }
+
+            if(liveBros.length > 0 && enemies.length > 0) {
+                let b = liveBros[0], e = enemies[0];
+                let bonusAtk = myItems.filter(i=>i.equipped).reduce((s,i)=>s+(i.atk||0), 0);
+                let petAtk = myPets.reduce((s,p)=>s+p.atk, 0);
+
+                e.hp -= (b.atk + bonusAtk + (petAtk/60)) / 60;
+                b.hp -= e.atk / 60;
+
+                if(e.hp <= 0) { enemies.shift(); pts += 1000; updateUI(); }
+                if(b.hp <= 0) { b.dead = true; b.hp = 0; }
+                e.x += (600 - e.x)*0.05;
+            }
+        }
+        render();
+        requestAnimationFrame(loop);
+    }
+
+    function render() {
+        const a = document.getElementById('arena'); a.innerHTML = '';
+        [...bros, ...enemies].forEach(u => {
+            let d = document.createElement('div');
+            d.className = `unit ${u.dead?'dead':''} ${u.isBoss?'boss-unit':''}`;
+            d.style.left = u.x+'px'; d.style.top = u.y+'px';
+            d.innerHTML = `<div class="hp-bar"><div class="hp-fill" style="width:${(u.hp/u.maxHp)*100}%"></div></div><span style="font-size:60px">${u.i}</span>`;
+            a.appendChild(d);
+        });
+        // PET RENDER
+        if(bros.find(b=>!b.dead)) {
+            let leader = bros.find(b=>!b.dead);
+            myPets.forEach((p, i) => {
+                p.angle += 0.04;
+                let px = leader.x + Math.cos(p.angle + i) * 110;
+                let py = leader.y + Math.sin(p.angle + i) * 110;
+                let pd = document.createElement('div');
+                pd.className = `pet rarity-${p.r.toLowerCase()}`;
+                pd.style.left = px+'px'; pd.style.top = py+'px';
+                pd.innerText = p.i; a.appendChild(pd);
+            });
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('pts-ui').innerText = pts.toLocaleString();
+        document.getElementById('wave-ui').innerText = wave;
+        const inv = document.getElementById('inv-container'); inv.innerHTML = '';
+        myItems.forEach((it, idx) => {
+            let d = document.createElement('div'); d.className = `inv-item ${it.equipped?'equipped':''}`;
+            d.innerHTML = `<h1 style="margin:0">${it.i}</h1><small>${it.n}</small>`;
+            d.onclick = () => {
+                if(it.t==='USE') { it.eff(); myItems.splice(idx,1); }
+                else { it.equipped = !it.equipped; }
+                updateUI();
+            };
+            inv.appendChild(d);
+        });
+    }
+
+    function healSquad() { bros.forEach(b=>{b.dead=false; b.hp=b.maxHp;}); updateUI(); }
+    function closeMenus() { document.querySelectorAll('.overlay').forEach(o => { if(o.id !== 'start-screen') o.style.display='none'; }); if(!waveActive && enemies.length === 0) { wave++; startWave(); } }
+    function saveGame() { localStorage.setItem('bro_save_ultimate', JSON.stringify({pts, wave, bros, myItems, myPets})); alert("CLOUD SAVE SYNCED!"); }
+</script>
+</body>
+</html>

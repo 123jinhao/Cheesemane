@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cook A Pizza! - Customer Edition</title>
+    <style>
+        body { font-family: 'Comic Sans MS', cursive, sans-serif; background-color: #f4e1d2; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #game-container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 95%; max-width: 900px; text-align: center; }
+        
+        /* Customer Section */
+        #customer-area { background: #dfe6e9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 10px solid #d35400; }
+        #customer-bubble { font-size: 1.2rem; font-weight: bold; color: #2d3436; }
+        
+        .shelf { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 10px; max-height: 200px; overflow-y: auto; }
+        .ingredient { background: #ecf0f1; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 13px; border: 1px solid #ccc; }
+        .ingredient:hover { background: #ffeaa7; }
+        .rare { border: 2px solid #9b59b6; background: #f3e5f5; }
+        
+        #pizza-pan { width: 180px; height: 180px; background: #f39c12; border-radius: 50%; margin: 15px auto; border: 8px solid #e67e22; display: flex; align-items: center; justify-content: center; position: relative; }
+        #topping-list { font-size: 11px; font-weight: bold; color: #fff; text-shadow: 1px 1px #000; padding: 10px; }
+        
+        .controls { display: flex; gap: 10px; justify-content: center; }
+        button { background: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #2ecc71; }
+        .score-board { font-size: 1.5rem; color: #d35400; margin: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>🍕 COOK A PIZZA!</h1>
+    
+    <div id="game-container">
+        <div class="score-board">Score: <span id="score">0</span></div>
+
+        <div id="customer-area">
+            <div id="customer-name" style="font-size: 0.8rem; color: #636e72;">CURRENT CUSTOMER:</div>
+            <div id="customer-bubble">"I'm hungry! Click 'Next Customer' to start!"</div>
+        </div>
+
+        <div id="pizza-pan">
+            <div id="topping-list">Empty Pan</div>
+        </div>
+
+        <div class="controls">
+            <button onclick="bakePizza()">SERVE PIZZA!</button>
+            <button onclick="nextCustomer()" style="background:#3498db">Next Customer</button>
+            <button onclick="resetPizza()" style="background:#c0392b">Clear Toppings</button>
+        </div>
+
+        <div style="font-weight: bold; margin-top: 20px;">Common (Dough & Basics)</div>
+        <div class="shelf" id="common-shelf"></div>
+
+        <div style="font-weight: bold;">Special & Rare (The Good Stuff)</div>
+        <div class="shelf" id="rare-shelf"></div>
+    </div>
+
+    <script>
+        const commons = ["flour", "water", "milk", "egg", "knife", "chili", "dough", "cheese", "tomato", "potato", "sliced mushroom", "spring onion", "apple", "pepper", "salt", "sugar", "fire", "pepperoni", "cherry", "oil", "pinecone", "pineapple"];
+        const rares = ["a bar of chocolate", "cream", "carrot", "cabbage", "pumpkin", "onion", "corn", "unknown fish", "tuna", "salmon", "almond", "peanut", "grape", "grate", "honey", "cactus", "sesame seed", "seaweed", "kimchi(spicy)", "mustard", "oat", "cocoa powder", "sour powder", "aijinomoto", "lime", "chicken(raw)", "banana", "strawberry", "butter", "maple syrup", "acorn", "orange", "kimchi(spiceless)", "mayonese"];
+
+        let score = 0;
+        let currentToppings = [];
+        let currentRequirement = "";
+        let currentCustomer = "";
+
+        const customers = [
+            { name: "The Grumpy Woodsman", want: "pinecone", dialog: "I want something that reminds me of the forest!" },
+            { name: "Fancy Feline", want: "tuna", dialog: "Meow! I require the finest fish you have." },
+            { name: "The Spicy Grandma", want: "kimchi(spicy)", dialog: "Make it burn! I need some heat!" },
+            { name: "The Sweet Tooth", want: "honey", dialog: "Make it sticky and sweet, please!" },
+            { name: "The Weird Scientist", want: "unknown fish", dialog: "I'm conducting a flavor experiment. Give me something... mysterious." },
+            { name: "The Traditionalist", want: "pepperoni", dialog: "Just a classic pepperoni for me." }
+        ];
+
+        function init() {
+            const commonShelf = document.getElementById('common-shelf');
+            const rareShelf = document.getElementById('rare-shelf');
+
+            commons.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'ingredient';
+                div.innerText = item;
+                div.onclick = () => { currentToppings.push(item); updateUI(); };
+                commonShelf.appendChild(div);
+            });
+
+            rares.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'ingredient rare';
+                div.innerText = item;
+                div.onclick = () => { currentToppings.push(item); updateUI(); };
+                rareShelf.appendChild(div);
+            });
+        }
+
+        function nextCustomer() {
+            let rand = customers[Math.floor(Math.random() * customers.length)];
+            currentCustomer = rand.name;
+            currentRequirement = rand.want;
+            document.getElementById('customer-name').innerText = "CUSTOMER: " + currentCustomer;
+            document.getElementById('customer-bubble').innerText = `"${rand.dialog}"`;
+            resetPizza();
+        }
+
+        function updateUI() {
+            document.getElementById('topping-list').innerText = currentToppings.length > 0 ? currentToppings.join(", ") : "Empty Pan";
+            document.getElementById('score').innerText = score;
+        }
+
+        function bakePizza() {
+            if (!currentCustomer) { alert("No customer to serve!"); return; }
+            if (!currentToppings.includes("fire")) { alert("It's raw! You need 'fire'!"); return; }
+
+            if (currentToppings.includes(currentRequirement)) {
+                score += 100;
+                alert(currentCustomer + " says: PERFECT! Exactly what I wanted!");
+            } else {
+                score -= 50;
+                alert(currentCustomer + " says: Eww! This isn't what I asked for!");
+            }
+            nextCustomer();
+        }
+
+        function resetPizza() {
+            currentToppings = [];
+            updateUI();
+        }
+
+        init();
+    </script>
+</body>
+</html>

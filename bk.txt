@@ -1,0 +1,41 @@
+        // Game Variables
+        let luck = 0;
+        let luckPerClick = 1;
+
+        // Elements
+        const scoreDisplay = document.getElementById("luck-score");
+        const luckyBtn = document.getElementById("lucky-btn");
+        const gameArea = document.querySelector(".game-area");
+
+        // The Main Click Function
+        luckyBtn.addEventListener("click", (event) => {
+            // 1. Add Score
+            luck += luckPerClick;
+            
+            // 2. Update Text
+            scoreDisplay.innerText = luck;
+
+            // 3. Create the Floating Number Effect
+            createFloatingNumber(event.clientX, event.clientY);
+        });
+
+        // Function to create the floating "+1"
+        function createFloatingNumber(x, y) {
+            const el = document.createElement("div");
+            el.classList.add("floating-number");
+            el.innerText = "+" + luckPerClick;
+            
+            // Randomize position slightly so they don't stack perfectly
+            const randomX = (Math.random() - 0.5) * 40; 
+            
+            el.style.left = (x + randomX) + "px";
+            el.style.top = (y - 50) + "px"; // Start slightly above mouse
+
+            // Add to screen
+            document.body.appendChild(el);
+
+            // Remove element after animation finishes (1 second) to keep game fast
+            setTimeout(() => {
+                el.remove();
+            }, 1000);
+        }

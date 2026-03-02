@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Bros: Level 100 Legend</title>
+    <style>
+        :root { --main: #00ffcc; --danger: #ff4444; --gold: #ffcc00; --rage: #ff6600; --panel: #16213e; --xp: #bb00ff; }
+        body { background: #05050a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; overflow: hidden; }
+        #game-container { max-width: 950px; margin: 5px auto; border: 3px solid #333; background: #0f0f1a; border-radius: 15px; padding: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .header { display: flex; justify-content: space-around; padding: 8px; background: var(--panel); border-radius: 10px; border-bottom: 2px solid var(--main); margin-bottom: 5px; }
+        #arena { height: 320px; background: #0a0a15; position: relative; border: 2px solid #222; margin-bottom: 10px; overflow: hidden; display: none; }
+        #selection-screen { height: 320px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #0a0a15; border: 2px solid #222; margin-bottom: 10px; }
+        .enemy-card { background: #16213e; padding: 10px; border: 2px solid #444; border-radius: 10px; width: 140px; cursor: pointer; }
+        .unit { position: absolute; font-size: 40px; display: flex; flex-direction: column; align-items: center; transition: left 0.5s ease-out, top 0.5s ease-out; }
+        .lvl-tag { font-size: 9px; background: black; color: var(--gold); padding: 1px 3px; border: 1px solid var(--gold); border-radius: 4px; font-weight: bold; position: absolute; top: -25px; white-space: nowrap;}
+        
+        /* Level Visual Scaling */
+        .unit.mid-tier { filter: drop-shadow(0 0 5px var(--main)); }
+        .unit.high-tier { filter: drop-shadow(0 0 10px var(--gold)); transform: scale(1.2); }
+        .unit.max-tier { filter: drop-shadow(0 0 15px #ffffff); transform: scale(1.4); }
+
+        .hp-bar { width: 50px; height: 6px; background: #444; border-radius: 3px; margin-bottom: 2px; }
+        .hp-fill { height: 100%; background: #00ff88; width: 100%; }
+        .xp-bar { width: 50px; height: 4px; background: #222; border-radius: 2px; }
+        .xp-fill { height: 100%; background: var(--xp); width: 0%; transition: width 0.1s; }
+        
+        .shop { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        button { background: #16213e; color: white; border: 1px solid var(--main); padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; }
+        button:hover:not(:disabled) { background: var(--main); color: #000; }
+        button:disabled { opacity: 0.3; }
+        #rage-container { width: 100%; height: 12px; background: #222; margin-bottom: 5px; border-radius: 6px; overflow: hidden; }
+        #rage-fill { height: 100%; width: 0%; background: var(--rage); }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="header">
+        <div>💰 <span id="pts">200</span></div>
+        <div>WAVE <span id="wave-num">1</span></div>
+        <div>BROS: <span id="bro-count">0</span></div>
+    </div>
+    <div id="rage-container"><div id="rage-fill"></div></div>
+    
+    <div id="selection-screen">
+        <h3>CHOOSE BATTLE</h3>
+        <div style="display:flex; gap:10px;" id="choice-list"></div>
+    </div>
+    <div id="arena"></div>
+
+    <div class="shop">
+        <button onclick="hireBro(false)">RECRUIT (50)</button>
+        <button onclick="hireBro(true)" id="elite-btn" disabled>GIGA (120)</button>
+        <button onclick="useSyringe()" id="revive-btn" disabled>SYRINGE (100)</button>
+        <button onclick="buyMine()" style="border-color:orange">MINE (60)</button>
+        <button onclick="buyItem('vest')">ARMOR (30)</button>
+        <button onclick="buyItem('shake')">PROTEIN (40)</button>
+        <button onclick="buyTurret()">TURRET (80)</button>
+        <button onclick="retreat()" id="retreat-btn" style="border-color:red; display:none;">RETREAT</button>
+    </div>
+</div>
+
+<script>
+    let pts = 200, wave = 1, bros = [], deadBros = [], enemies = [], turrets = [], mines = [], gameActive = false, rage = 0, rageActive = false;
+    const arena = document.getElementById('arena');
+    const selection = document.getElementById('selection-screen');
+
+    function updateUI() {
+        document.getElementById('pts').innerText = Math.floor(pts);
+        document.getElementById('bro-count').innerText = bros.length;
+        document.getElementById('wave-num').innerText = wave;
+        document.getElementById('rage-fill').style.width = rage + '%';
+        document.getElementById('elite-btn').disabled = (wave < 5 || pts < 120);
+        document.getElementById('revive-btn').disabled = (deadBros.length === 0 || pts < 100);
+        document.getElementById('retreat-btn').style.display = gameActive ? 'block' : 'none';
+    }
+
+    function generateChoices() {
+        gameActive = false; selection.style.display = 'flex'; arena.style.display = 'none';
+        const list = document.getElementById('choice-list'); list.innerHTML = '';
+        let isBoss = (wave % 5 === 0);
+        for(let i=0; i < (isBoss ? 1 : 3); i++) {
+            let type = isBoss ? {icon:'🐉', hp:1800, atk:40} : [{icon:'👾',hp:90,atk:5},{icon:'👹',hp:160,atk:8},{icon:'🤖',hp:220,atk:6}][Math.floor(Math.random()*3)];
+            let div = document.createElement('div'); div.className = 'enemy-card';
+            div.innerHTML = `<div>${type.icon}</div>HP: ${type.hp+(wave*25)}<br><button>BATTLE</button>`;
+            div.onclick = () => startWave(type, isBoss);
+            list.appendChild(div);
+        }
+        updateUI();
+    }
+
+    function startWave(type, isBoss) {
+        if(bros.length === 0) return alert("No Bros!");
+        selection.style.display = 'none'; arena.style.display = 'block';
+        enemies = [];
+        let count = isBoss ? 1 : (2 + Math.floor(wave/3));
+        for(let i=0; i<count; i++) {
+            enemies.push({ icon: type.icon, hp: type.hp+(wave*25), maxHp: type.hp+(wave*25), atk: type.atk+(wave*1.8), isBoss, x: 900, y: 100 + Math.random()*150 });
+        }
+        gameActive = true;
+    }
+
+    function buyMine() { if(pts >= 60) { pts -= 60; mines.push({ x: 300 + Math.random()*200, y: 100 + Math.random()*150 }); updateUI(); } }
+    function buyTurret() { if(pts >= 80) { pts -= 80; turrets.push({ icon: '🛰️', atk: 15, x: 20, y: 50+(turrets.length*55) }); updateUI(); } }
+    function useSyringe() { if(pts >= 100 && deadBros.length > 0) { pts -= 100; let b = deadBros.pop(); b.hp = b.maxHp; bros.push(b); updateUI(); } }
+    
+    function hireBro(elite) {
+        let cost = elite ? 120 : 50;
+        if(pts >= cost) {
+            pts -= cost;
+            bros.push({ icon: elite?'👑':'🧔', hp: elite?600:150, maxHp: elite?600:150, atk: elite?45:15, x: -100, y: 100 + Math.random()*150, elite, xp: 0, lvl: 1 });
+            updateUI();
+        }
+    }
+
+    function buyItem(type) {
+        if(type==='vest' && pts>=30) { pts-=30; bros.forEach(b=> {b.maxHp+=60; b.hp+=60;}); }
+        if(type==='shake' && pts>=40) { pts-=40; bros.forEach(b=> b.atk+=5); }
+        updateUI();
+    }
+
+    function retreat() { if(confirm("Retreat?")) { pts=Math.floor(pts*0.5); enemies=[]; generateChoices(); } }
+
+    window.addEventListener('keydown', (e) => { if(e.code==='Space' && rage>=100) { rage=0; rageActive=true; setTimeout(()=>rageActive=false, 6000); }});
+
+    function gameLoop() {
+        if (gameActive && enemies.length > 0 && bros.length > 0) {
+            bros.forEach((b, i) => { b.x = Math.min(250 - (i*15), 250); });
+            enemies.forEach((e, i) => { e.x = Math.max(350 + (i*45), 350); });
+
+            mines.forEach((m, idx) => { if(enemies[0].x <= m.x + 40) { enemies[0].hp -= 400; m.exploded = true; setTimeout(() => mines.splice(idx, 1), 300); } });
+
+            let mult = rageActive ? 4 : 1;
+            let totalDmg = ((bros.reduce((s, b) => s + b.atk, 0) * mult) + turrets.reduce((s,t) => s + t.atk, 0)) / 60;
+            enemies[0].hp -= totalDmg;
+            
+            // LEVEL 100 SCALING
+            bros.forEach(b => {
+                if(b.lvl < 100) {
+                    b.xp += 1.5; // Faster XP
+                    if(b.xp >= 100) {
+                        b.lvl++; 
+                        b.xp = 0; 
+                        b.atk += 2; // +2 Damage per level
+                        b.maxHp += 10; // +10 HP per level
+                        b.hp += 10;
+                    }
+                }
+            });
+
+            if(!rageActive) rage = Math.min(100, rage + 0.25);
+            bros[0].hp -= (enemies[0].atk / 60);
+
+            if (enemies[0].hp <= 0) { 
+                pts += enemies[0].isBoss ? 500 : 50; 
+                enemies.shift(); 
+            }
+            if (bros[0].hp <= 0) deadBros.push(bros.shift());
+
+            if (enemies.length === 0) { wave++; gameActive = false; bros.forEach(b=>b.hp=Math.min(b.maxHp, b.hp+(b.maxHp*0.4))); setTimeout(generateChoices, 1000); }
+            renderUnits(); updateUI();
+        } else if (gameActive && bros.length === 0) { alert("SQUAD WIPED! Wave: " + wave); location.reload(); }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function renderUnits() {
+        arena.innerHTML = '';
+        [...bros, ...enemies, ...turrets].forEach(u => {
+            let div = document.createElement('div');
+            let tierClass = u.lvl > 75 ? 'max-tier' : u.lvl > 40 ? 'high-tier' : u.lvl > 15 ? 'mid-tier' : '';
+            div.className = `unit ${u.isBoss?'boss':''} ${tierClass} ${u.icon==='🛰️'?'turret':''} ${rageActive && u.hp?'rage-active':''}`;
+            div.style.left = u.x + 'px'; div.style.top = u.y + 'px';
+            
+            let bars = u.hp ? `<div class="hp-bar"><div class="hp-fill" style="width:${(u.hp/u.maxHp)*100}%"></div></div>` : '';
+            if(u.xp !== undefined && u.lvl < 100) bars += `<div class="xp-bar"><div class="xp-fill" style="width:${u.xp}%"></div></div>`;
+            
+            let lvl = (u.lvl) ? `<span class="lvl-tag">LVL ${u.lvl}</span>` : '';
+            div.innerHTML = lvl + bars + u.icon;
+            arena.appendChild(div);
+        });
+        mines.forEach(m => {
+            let div = document.createElement('div'); div.className = `unit mine ${m.exploded?'explode':''}`;
+            div.style.left = m.x + 'px'; div.style.top = m.y + 'px'; div.innerHTML = '💣';
+            arena.appendChild(div);
+        });
+    }
+
+    hireBro(false); generateChoices(); gameLoop();
+</script>
+</body>
+</html>
