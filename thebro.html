@@ -76,17 +76,7 @@
     let globalCritChance = 0;
     let globalLifesteal = 0;
 
-    // --- AUDIO SETUP ---
-    const bgMusic = new Audio('try.mp3'); // <--- PUT YOUR MUSIC FILE NAME HERE
-    bgMusic.loop = true;
-    bgMusic.volume = 0.4;
-    let musicStarted = true;
 
-    function startMusic() {
-        if (!musicStarted) {
-            bgMusic.play().catch(err => console.log("Waiting for interaction to play music..."));
-            musicStarted = true;
-        }
     }
 
     function toggleMute() {
