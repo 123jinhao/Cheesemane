@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <audio id="bgMusic" src="your-music-file.mp3" loop></audio>
     <title>The Bros: Level 100 Legend</title>
     <style>
         :root { --main: #00ffcc; --danger: #ff4444; --gold: #ffcc00; --rage: #ff6600; --panel: #16213e; --xp: #bb00ff; }
@@ -78,13 +77,14 @@
     let globalLifesteal = 0;
 
     // --- AUDIO SETUP ---
-    const bgMusic = document.getElementById('bgMusic');
+    const bgMusic = new Audio('your-music-file.mp3'); // <--- PUT YOUR MUSIC FILE NAME HERE
+    bgMusic.loop = true;
     bgMusic.volume = 0.4;
     let musicStarted = false;
 
     function startMusic() {
         if (!musicStarted) {
-            bgMusic.play().catch(err => console.log("Waiting for user interaction..."));
+            bgMusic.play().catch(err => console.log("Waiting for interaction to play music..."));
             musicStarted = true;
         }
     }
