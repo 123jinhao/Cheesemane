@@ -128,6 +128,11 @@
     if(localStorage.getItem('bro_save_ultimate')) document.getElementById('load-btn').style.display='block';
 
     function initGame(load) {
+
+        const music = document.getElementById("bgm");
+         music.play();
+
+        
         document.getElementById('start-screen').style.display = 'none';
         if(load) {
             const s = JSON.parse(localStorage.getItem('bro_save_ultimate'));
@@ -296,13 +301,5 @@
 <source src="crsytal.mp3" type="audio/mpeg"
 </audio> 
 
-      <script>
-const music = document.getElementById("bgm");
-
-// Browsers require user interaction before playing sound
-document.addEventListener("click", () => {
-    music.play();
-}, { once: true });
-</script>
 </body>
 </html>
