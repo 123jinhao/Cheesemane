@@ -136,17 +136,31 @@
             Craft A Pizza
         </button>
 
-        <button class="game-button" onclick="location.href='THEBROS.html'">
+        <button class="game-button" onclick="location.href='bro.html'">
             <img src="THEBRO'S.jpg" alt="The Bros: Level 100 Legends">
             The Bros: Level 100 Legends
         </button>
     </div>
 </div>
+     <audio id="bgm" loop>
+    <source src="donut.mp3" type="audio/mpeg">
+   </audio>
+   
+  <script>
+const music = document.getElementById("bgm");
+
+// Browsers require user interaction before playing sound
+document.addEventListener("click", () => {
+    music.play();
+}, { once: true });
+</script>
+
 
 
 
 </body>
 </html>
+
 
 
 
