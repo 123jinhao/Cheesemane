@@ -295,5 +295,14 @@
   <audio id="bgm" loop>
 <source src="crsytal.mp3" type="audio/mpeg"
 </audio> 
+
+      <script>
+const music = document.getElementById("bgm");
+
+// Browsers require user interaction before playing sound
+document.addEventListener("click", () => {
+    music.play();
+}, { once: true });
+</script>
 </body>
 </html>
