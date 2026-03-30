@@ -45,6 +45,18 @@
         .pet { position: absolute; font-size: 30px; z-index: 5; pointer-events: none; }
         .rarity-exotic { filter: drop-shadow(0 0 10px var(--exotic)); }
         .rarity-mythic { filter: drop-shadow(0 0 10px var(--mythic)); }
+ #playerSkin {
+      width: 420px;
+      height: 420px;
+      border-radius: 18px;
+      transition: transform 0.08s;
+      object-fit: cover;
+      background: white;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    }
+    #playerSkin:active { transform: scale(0.95); }
+
+        
     </style>
 </head>
 <body>
@@ -99,7 +111,7 @@
     let waveActive = false;
 
     // LIBRARIES (50+ VARIATIONS)
-    const broIcons = ['🧔','🥷','🧙‍♂️','🦾','🤴','🤺','💂‍♂️','🤠','🧑‍🚀','👮‍♂️','🕵️‍♂️','🧛‍♂️','🧞‍♂️','🧜‍♂️','🦸‍♂️','🦹‍♂️','🧑‍🔬','🧑‍🚒','🧑‍🌾','🧑‍🍳'];
+    const broIcons = ['img id="playerSkin" src="oribro.png"','🥷','🧙‍♂️','🦾','🤴','🤺','💂‍♂️','🤠','🧑‍🚀','👮‍♂️','🕵️‍♂️','🧛‍♂️','🧞‍♂️','🧜‍♂️','🦸‍♂️','🦹‍♂️','🧑‍🔬','🧑‍🚒','🧑‍🌾','🧑‍🍳'];
     const monsterIcons = ['👾','👹','🧛','🧟','💀','👽','🕷','🦂','🐉','🤖','👺','🦇','🐙','🦖','🛸','👻','🎃','👺','🐍','🐺','🐗','🐘','🦍','🐊'];
     const petIcons = { 'Common':'🐶', 'Rare':'🦊', 'Epic':'🦄', 'Mythic':'🐲', 'Exotic':'💎' };
 
@@ -119,7 +131,7 @@
             const s = JSON.parse(localStorage.getItem('bro_save_ultimate'));
             pts = s.pts; wave = s.wave; bros = s.bros; myItems = s.myItems; myPets = s.myPets;
         } else {
-            addBro("Lead", "🧔", 5000, 500);
+            addBro("Lead", "👨", 5000, 500);
         }
         startWave();
         updateUI();
