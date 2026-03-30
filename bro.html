@@ -292,6 +292,8 @@
     function closeMenus() { document.querySelectorAll('.overlay').forEach(o => { if(o.id !== 'start-screen') o.style.display='none'; }); if(!waveActive && enemies.length === 0) { wave++; startWave(); } }
     function saveGame() { localStorage.setItem('bro_save_ultimate', JSON.stringify({pts, wave, bros, myItems, myPets})); alert("CLOUD SAVE SYNCED!"); }
 </script>
-  
+  <audio id="bgm" loop>
+<source src="crsytal.mp3" type="audio/mpeg"
+</audio> 
 </body>
 </html>
